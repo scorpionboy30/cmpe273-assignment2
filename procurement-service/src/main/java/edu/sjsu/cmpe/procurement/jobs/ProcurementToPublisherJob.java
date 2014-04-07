@@ -102,7 +102,7 @@ public class ProcurementToPublisherJob extends Job {
 						pushBooksToTopics(tempJSON, categoryName, dest);
 					}
 					//push books to all topic
-					topicName = topicName + configuration.getStompTopicAll();
+					topicName = configuration.getStompTopicPrefix() + configuration.getStompTopicAll();
 					dest = new StompJmsDestination(topicName);
 					pushBooksToTopics(tempJSON, categoryName, dest);
 				}
