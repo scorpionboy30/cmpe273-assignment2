@@ -1,21 +1,29 @@
 package de.spinscale.dropwizard.jobs;
 
-import com.google.common.collect.Sets;
-import com.yammer.dropwizard.lifecycle.Managed;
-import de.spinscale.dropwizard.jobs.annotations.Every;
-import de.spinscale.dropwizard.jobs.annotations.On;
-import de.spinscale.dropwizard.jobs.annotations.OnApplicationStart;
-import de.spinscale.dropwizard.jobs.annotations.OnApplicationStop;
-import de.spinscale.dropwizard.jobs.parser.TimeParserUtil;
-import org.quartz.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobBuilder;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.google.common.collect.Sets;
+import com.yammer.dropwizard.lifecycle.Managed;
+
+import de.spinscale.dropwizard.jobs.annotations.Every;
+import de.spinscale.dropwizard.jobs.annotations.On;
+import de.spinscale.dropwizard.jobs.annotations.OnApplicationStart;
+import de.spinscale.dropwizard.jobs.annotations.OnApplicationStop;
+import de.spinscale.dropwizard.jobs.parser.TimeParserUtil;
 
 public class JobManager implements Managed {
 

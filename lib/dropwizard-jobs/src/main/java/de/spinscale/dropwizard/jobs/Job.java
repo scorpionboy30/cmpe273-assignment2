@@ -1,11 +1,11 @@
 package de.spinscale.dropwizard.jobs;
 
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Counter;
-import com.yammer.metrics.core.Timer;
-import com.yammer.metrics.core.TimerContext;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Timer;
+import com.yammer.metrics.core.TimerContext;
 
 public abstract class Job implements org.quartz.Job {
 

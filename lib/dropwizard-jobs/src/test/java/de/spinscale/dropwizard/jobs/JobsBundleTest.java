@@ -1,14 +1,15 @@
 package de.spinscale.dropwizard.jobs;
 
-import com.yammer.dropwizard.config.Environment;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
+import com.yammer.dropwizard.config.Environment;
 
 public class JobsBundleTest {
 
