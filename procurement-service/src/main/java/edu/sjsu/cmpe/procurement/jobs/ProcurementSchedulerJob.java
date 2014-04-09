@@ -24,16 +24,19 @@ public class ProcurementSchedulerJob extends Job {
 	
 	@Override
 	public void doJob() {
+		Connection connection = null;
+		Session session = null;
+		MessageConsumer consumer = null;
 		try {
 			StompJmsConnectionFactory factory = new StompJmsConnectionFactory();
 			factory.setBrokerURI("tcp://" + configuration.getApolloHost() + ":" + configuration.getApolloPort());
-			Connection connection = factory.createConnection(configuration.getApolloUser(), configuration.getApolloPassword());
+			connection = factory.createConnection(configuration.getApolloUser(), configuration.getApolloPassword());
 
 			connection.start();
-			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			Destination dest = new StompJmsDestination("/queue/80067.book.orders");
 
-			MessageConsumer consumer = session.createConsumer(dest);
+			consumer = session.createConsumer(dest);
 			System.out.println("Waiting for messages from /queue/80067.book.orders...");
 			long waitUntil = 5000; // wait for 5 sec
 			while (true) {
@@ -55,10 +58,20 @@ public class ProcurementSchedulerJob extends Job {
 							+ msg.getClass());
 				}
 			} // end while loop
-			connection.close();
 			System.out.println("Done");
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally{
+			try{
+				consumer.close();
+				session.close();
+				connection.stop();
+				connection.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 }

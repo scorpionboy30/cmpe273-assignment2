@@ -1,8 +1,6 @@
 package edu.sjsu.cmpe.library.jobs;
 
-import java.net.MalformedURLException;
 import java.net.URL;
-
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -10,11 +8,9 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
 import org.fusesource.stomp.jms.StompJmsConnectionFactory;
 import org.fusesource.stomp.jms.StompJmsDestination;
 import org.fusesource.stomp.jms.message.StompJmsMessage;
-
 import de.spinscale.dropwizard.jobs.Job;
 import de.spinscale.dropwizard.jobs.annotations.Every;
 import edu.sjsu.cmpe.library.config.LibraryServiceConfiguration;
@@ -32,6 +28,8 @@ public class TopicListener extends Job {
 		factory.setBrokerURI("tcp://" + configuration.getApolloHost() + ":"
 				+ configuration.getApolloPort());
 		Connection connection = null;
+		Session session = null;
+		MessageConsumer consumer = null;
 		try {
 			connection = factory.createConnection(
 					configuration.getApolloUser(),
@@ -39,9 +37,9 @@ public class TopicListener extends Job {
 			connection.start();
 			Destination dest = new StompJmsDestination(
 					configuration.getStompTopicName());
-			Session session = connection.createSession(false,
+			session = connection.createSession(false,
 					Session.AUTO_ACKNOWLEDGE);
-			MessageConsumer consumer = session.createConsumer(dest);
+			consumer = session.createConsumer(dest);
 			long waitUntil = 5000;
 			String receivedMsg = null;
 			while (true) {
@@ -49,7 +47,7 @@ public class TopicListener extends Job {
 				if (msg != null) {
 					if (msg instanceof TextMessage) {
 						receivedMsg = ((TextMessage) msg).getText();
-						System.out.println("StompJmsMessage===>" + receivedMsg);
+						System.out.println("TextMessage===>" + receivedMsg);
 
 					} else if (msg instanceof StompJmsMessage) {
 						StompJmsMessage smsg = ((StompJmsMessage) msg);
@@ -63,7 +61,9 @@ public class TopicListener extends Job {
 
 					if (receivedMsg != null) {
 						String recMsgArr[] = receivedMsg.split("\"");
-
+						
+						if(recMsgArr.length > 2)
+						{
 						String isbn = recMsgArr[0].split(":")[0];
 						String title = recMsgArr[1];
 						String category = recMsgArr[3];
@@ -75,17 +75,21 @@ public class TopicListener extends Job {
 						receivedBook.setCategory(category);
 						try {
 							receivedBook.setCoverimage(new URL(coverImage));
-						} catch (MalformedURLException e) {
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 						bookRepository.updateLibrary(receivedBook);
+						}
 					}
 				}// end of if
 			}
-		} catch (JMSException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
+			consumer.close();
+			session.close();
+			connection.stop();
 			connection.close();
 		} catch (JMSException e) {
 			e.printStackTrace();
