@@ -31,7 +31,6 @@ public class LibraryService extends Service<LibraryServiceConfiguration> {
 		bootstrap.setName("library-service");
 		bootstrap.addBundle(new ViewBundle());
 		bootstrap.addBundle(new AssetsBundle());
-		bootstrap.addBundle(new JobsBundle("edu.sjsu.cmpe.library.jobs"));
     }
 
     @Override
