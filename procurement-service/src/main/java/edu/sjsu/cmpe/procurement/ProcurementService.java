@@ -15,8 +15,8 @@ import com.yammer.dropwizard.config.Environment;
 import de.spinscale.dropwizard.jobs.JobsBundle;
 import edu.sjsu.cmpe.procurement.api.resources.RootResource;
 import edu.sjsu.cmpe.procurement.config.ProcurementServiceConfiguration;
-import edu.sjsu.cmpe.procurement.jobs.ProcurementSchedulerJob;
-import edu.sjsu.cmpe.procurement.jobs.ProcurementToPublisherJob;
+import edu.sjsu.cmpe.procurement.jobs.QueueToProcurementJob;
+import edu.sjsu.cmpe.procurement.jobs.PublisherToProcurementToQueueJob;
 
 public class ProcurementService extends Service<ProcurementServiceConfiguration> {
 
@@ -65,8 +65,8 @@ public class ProcurementService extends Service<ProcurementServiceConfiguration>
 	log.debug("Queue name is {}. Topic is {}", queueName, topicName);
 	
 	// TODO: Apollo STOMP Broker URL and login
-	ProcurementToPublisherJob.configuration = configuration;
-	ProcurementSchedulerJob.configuration = configuration;
+	PublisherToProcurementToQueueJob.configuration = configuration;
+	QueueToProcurementJob.configuration = configuration;
 	
     }
 }

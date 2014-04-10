@@ -19,7 +19,7 @@ import edu.sjsu.cmpe.procurement.config.ProcurementServiceConfiguration;
  * This job will run at every 5 second.
  */
 @Every("5s")
-public class ProcurementSchedulerJob extends Job {
+public class QueueToProcurementJob extends Job {
 	public static ProcurementServiceConfiguration configuration;
 	
 	@Override
@@ -43,21 +43,21 @@ public class ProcurementSchedulerJob extends Job {
 				Message msg = consumer.receive(waitUntil);
 				if (msg instanceof TextMessage) {
 					String body = ((TextMessage) msg).getText();
-					System.out.println("Received message = " + body);
+					System.out.println("Received order = " + body);
 
 					int isbn = Integer.parseInt(body.split(":")[1]);
 					ProcurementService.isbns.add(isbn);
 
 				} else if (msg == null) {
 					System.out
-							.println("No new messages. Exiting due to timeout - "
+							.println("No new orders. Exiting due to timeout - "
 									+ waitUntil / 1000 + " sec");
 					break;
 				} else {
 					System.out.println("Unexpected message type: "
 							+ msg.getClass());
 				}
-			} // end while loop
+			}
 			System.out.println("Done");
 		} catch (Exception e) {
 			e.printStackTrace();

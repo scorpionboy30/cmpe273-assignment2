@@ -1,10 +1,5 @@
 package edu.sjsu.cmpe.library;
 
-import javax.jms.Connection;
-import javax.jms.Destination;
-
-import org.fusesource.stomp.jms.StompJmsConnectionFactory;
-import org.fusesource.stomp.jms.StompJmsDestination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +13,7 @@ import de.spinscale.dropwizard.jobs.JobsBundle;
 import edu.sjsu.cmpe.library.api.resources.BookResource;
 import edu.sjsu.cmpe.library.api.resources.RootResource;
 import edu.sjsu.cmpe.library.config.LibraryServiceConfiguration;
-import edu.sjsu.cmpe.library.jobs.TopicListener;
+import edu.sjsu.cmpe.library.listener.BookListener;
 import edu.sjsu.cmpe.library.repository.BookRepository;
 import edu.sjsu.cmpe.library.repository.BookRepositoryInterface;
 import edu.sjsu.cmpe.library.ui.resources.HomeResource;
@@ -60,7 +55,10 @@ public class LibraryService extends Service<LibraryServiceConfiguration> {
 	environment.addResource(new HomeResource(bookRepository));
 	
 	/** Initialize TopicListener Variables**/
-	TopicListener.configuration = configuration;
-	TopicListener.bookRepository = bookRepository;
+	BookListener.configuration = configuration;
+	BookListener.bookRepository = bookRepository;
+	
+	Thread t = new Thread(new BookListener());
+	t.start();
     }
 }

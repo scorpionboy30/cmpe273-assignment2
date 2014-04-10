@@ -29,35 +29,30 @@ import edu.sjsu.cmpe.procurement.config.ProcurementServiceConfiguration;
  * This job will run at every 5 minutes.
  */
 @Every("300s")
-public class ProcurementToPublisherJob extends Job {
+public class PublisherToProcurementToQueueJob extends Job {
 	public static ProcurementServiceConfiguration configuration;
 
 	@Override
 	public void doJob() {
 		// try {
-		// TODO Auto-generated method stub
-		System.out.println("Executing the 5 minute job");
-		System.out.println("*******************Get Data from Queue!!*******************");
 		
 		if (ProcurementService.isbns != null
 				&& !ProcurementService.isbns.isEmpty()) {
-			postMessagesToPublisher();
+			postOrderToPublisher();
 			ProcurementService.isbns = new ArrayList<Integer>();
-			getMSgFromPublisher();
-		} else {
-			System.out.println("Array is empty");
+			getBooksFromPublisher();
 		}
 	}
 
-	public void postMessagesToPublisher() {
+	public void postOrderToPublisher() {
 		try {
-			System.out.println("Posting msges to publisher!!");
+			System.out.println("Sending order to publisher");
 
 			Client client = Client.create();
 			WebResource webResource = client.resource("http://" + configuration.getApolloHost() +":9000/orders");
 
 			String input = "{\"id\":\"80067\",\"order_book_isbns\":" + ProcurementService.isbns + "}";
-			System.out.println("Input JSON created is --->" + input);
+			System.out.println("Order created is :" + input);
 
 			ClientResponse response = webResource.type("application/json").post(ClientResponse.class, input);
 
@@ -65,7 +60,7 @@ public class ProcurementToPublisherJob extends Job {
 				throw new RuntimeException("Failed : HTTP error code : "+ response.getStatus());
 			}
 			
-			System.out.println("Output from Server .... \n");
+			System.out.println("Output from Publisher : \n");
 			String output = response.getEntity(String.class);
 			System.out.println(output);
 
@@ -74,7 +69,7 @@ public class ProcurementToPublisherJob extends Job {
 		}
 	}
 
-	public void getMSgFromPublisher() {
+	public void getBooksFromPublisher() {
 		String jsonString = ProcurementService.jerseyClient
 				.resource("http://" + configuration.getApolloHost() + ":9000/orders/80067")
 				.type("application/json").get(String.class);
@@ -91,7 +86,6 @@ public class ProcurementToPublisherJob extends Job {
 						+ childJSONObject.getString("title") + "\":" + "\""
 						+ childJSONObject.getString("category") + "\":" + "\""
 						+ childJSONObject.getString("coverimage") + "\"";
-				System.out.println("Newly created JSON as per fomat is---->\n"+ tempJSON);
 				if (tempJSON != null) {
 					String topicName = configuration.getStompTopicPrefix();
 					Destination dest = null;
@@ -99,12 +93,12 @@ public class ProcurementToPublisherJob extends Job {
 						//push books to computer topic
 						topicName = topicName + configuration.getStompTopicComputer();
 						dest = new StompJmsDestination(topicName);
-						pushBooksToTopics(tempJSON, categoryName, dest);
+						pushBooksToArrivalQueue(tempJSON, categoryName, dest);
 					}
 					//push books to all topic
 					topicName = configuration.getStompTopicPrefix() + configuration.getStompTopicAll();
 					dest = new StompJmsDestination(topicName);
-					pushBooksToTopics(tempJSON, categoryName, dest);
+					pushBooksToArrivalQueue(tempJSON, categoryName, dest);
 				}
 			}
 		} catch (JSONException e) {
@@ -112,8 +106,7 @@ public class ProcurementToPublisherJob extends Job {
 		}
 	}
 
-	public void pushBooksToTopics(String tempJSON, String categoryName, Destination dest) {
-		System.out.println("Inside pushBooksToTopics");
+	public void pushBooksToArrivalQueue(String tempJSON, String categoryName, Destination dest) {
 		StompJmsConnectionFactory factory = new StompJmsConnectionFactory();
 		factory.setBrokerURI("tcp://" + configuration.getApolloHost() + ":"
 				+ configuration.getApolloPort());
@@ -132,7 +125,7 @@ public class ProcurementToPublisherJob extends Job {
 			TextMessage msg = session.createTextMessage(tempJSON);
 			msg.setLongProperty("id", System.currentTimeMillis());
 			producer.send(msg);
-			System.out.println("Msg sent to topics");
+			System.out.println("New Books sent to book-arrival queue");
 			
 			
 		} catch (JMSException e) {
