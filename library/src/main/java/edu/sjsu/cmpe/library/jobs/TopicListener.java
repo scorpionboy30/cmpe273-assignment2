@@ -86,6 +86,7 @@ public class TopicListener extends Job {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		finally{
 		try {
 			consumer.close();
 			session.close();
@@ -93,6 +94,7 @@ public class TopicListener extends Job {
 			connection.close();
 		} catch (JMSException e) {
 			e.printStackTrace();
+		}
 		}
 	}
 
